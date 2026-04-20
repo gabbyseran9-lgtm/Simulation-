@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find the Odd Color</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background: #222;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #game-info { margin-bottom: 20px; }
+        
+        #grid {
+            display: grid;
+            gap: 10px;
+            max-width: 400px;
+            margin: 0 auto;
+            background: #333;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .tile {
+            width: 100%;
+            padding-bottom: 100%; /* Keeps tiles square */
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .tile:active { transform: scale(0.95); }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Find the Odd Color</h1>
+    <div id="game-info">
+        <span>Level: <b id="level">1</b></span> | 
+        <span>Time: <b id="timer">15</b>s</span>
+    </div>
+
+    <div id="grid"></div>
+
+    <button id="start-btn" onclick="startGame()">Start Game</button>
+
+    <script>
+        let level = 1;
+        let timeLeft = 15;
+        let timerInterval;
+        const grid = document.getElementById('grid');
+        const levelDisplay = document.getElementById('level');
+        const timerDisplay = document.getElementById('timer');
+
+        function startGame() {
+            level = 1;
+            timeLeft = 15;
+            document.getElementById('start-btn').style.display = 'none';
+            nextLevel();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Time's up! You reached Level " + level);
+                    grid.innerHTML = "";
+                    document.getElementById('start-btn').style.display = 'inline-block';
+                }
+            }, 1000);
+        }
+
+        function nextLevel() {
+            levelDisplay.textContent = level;
+            grid.innerHTML = "";
+            
+            // Calculate grid size (2x2, 3x3, etc.)
+            const size = Math.min(Math.floor(level / 3) + 2, 6);
+            grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+            // Pick a base color
+            const r = Math.floor(Math.random() * 200);
+            const g = Math.floor(Math.random() * 200);
+            const b = Math.floor(Math.random() * 200);
+            const baseColor = `rgb(${r}, ${g}, ${b})`;
+
+            // Create a "different" color (gets closer to base as level increases)
+            const offset = Math.max(40 - (level * 2), 5); 
+            const oddColor = `rgb(${r + offset}, ${g + offset}, ${b + offset})`;
+
+            const totalTiles = size * size;
+            const oddIndex = Math.floor(Math.random() * totalTiles);
+
+            for (let i = 0; i < totalTiles; i++) {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                tile.style.backgroundColor = (i === oddIndex) ? oddColor : baseColor;
+                
+                tile.onclick = () => {
+                    if (i === oddIndex) {
+                        level++;
+                        timeLeft += 2; // Bonus time
+                        nextLevel();
+                    } else {
+                        timeLeft -= 3; // Penalty
+                    }
+                };
+                grid.appendChild(tile);
+            }
+        }
+    </script>
+</body>
+</html>
